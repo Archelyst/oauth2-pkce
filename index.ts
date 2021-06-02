@@ -323,16 +323,21 @@ export class OAuth2AuthCodePkceClient {
      */
     public makeRetryFetchFunction(fetchFunc: FetchFunc): FetchFunc {
         return async (input: Request | string, ...rest): Promise<Response> => {
-            try {
-                return fetchFunc(input, ...rest);
-            }
-            catch (e) {
-                if (e instanceof ErrorInvalidToken) {
-                    await this.exchangeRefreshTokenForAccessToken();
-                    return fetchFunc(input, ...rest);
+            const response = await fetchFunc(input, ...rest);
+            if (response.status === 401) {
+                const authenticateHeader = response.headers.get(
+                    HEADER_WWW_AUTHENTICATE.toLowerCase()
+                );
+                if (authenticateHeader) {
+                    const error = parseWwwAuthenticateHeader(authenticateHeader).error;
+                    if (error === 'invalid_token') {
+                        await this.exchangeRefreshTokenForAccessToken();
+                        input = await this.requestInterceptor(input as Request);
+                        return fetchFunc(input, ...rest);
+                    }
                 }
-                throw e;
             }
+            return response;
         };
     }
 
