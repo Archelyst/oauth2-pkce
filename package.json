@@ -1,9 +1,9 @@
 {
   "name": "oauth2-pkce",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An OAuth 2.0 client library for the Authorization Code flow with PKCE",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/Tim-Erwin/oauth2-pkce.git"
