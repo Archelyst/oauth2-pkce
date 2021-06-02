@@ -31,12 +31,12 @@ const oauthClient = new OAuth2AuthCodePkceClient({
     },
     onInvalidGrant() {
         // when there is an error getting a token with a grant
-        console.warn('Invalid grant! Auth code or refresh token needs to be renewed.');
+        console.warn('Invalid grant! Auth code or refresh token need to be renewed.');
         // you probably want to redirect the user to the login page here
     },
     onInvalidToken() {
         // the token is invalid, e. g. because it has been removed in the backend
-        console.warn('Invalid token! Refresh and access tokens needs to be renewed.');
+        console.warn('Invalid token! Refresh and access tokens need to be renewed.');
         // you probably want to redirect the user to the login page here
     }
 });
