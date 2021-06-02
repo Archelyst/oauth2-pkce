@@ -1,0 +1,30 @@
+{
+  "name": "oauth2-pkce",
+  "version": "1.0.1",
+  "description": "An OAuth 2.0 client library for the Authorization Code flow with PKCE",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tim-Erwin/oauth2-pkce.git"
+  },
+  "scripts": {
+    "build:code:browser": "browserify -p esmify -s OAuth2Pkce -e index.js --outfile index.umd.js",
+    "build:code:esm": "tsc -p tsconfig.json",
+    "build:code": "npm run build:code:esm && npm run build:code:browser",
+    "build": "npm run clean && npm run build:code",
+    "clean": "rm -f *.d.ts *.js"
+  },
+  "keywords": [
+    "oauth",
+    "oauth2",
+    "pkce"
+  ],
+  "author": "Tim-Christian Mundt",
+  "license": "AGPL-3.0-only",
+  "devDependencies": {
+    "browserify": "^17.0.0",
+    "esmify": "^2.1.1",
+    "typescript": "^4.3.2"
+  }
+}

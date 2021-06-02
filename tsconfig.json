@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "module": "esnext",
+    "skipLibCheck": true,
+    "removeComments": true,
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "target": "es6",
+    "lib": [
+      "es2015",
+      "es2017",
+      "es2019",
+      "dom"
+    ],
+    "moduleResolution": "node",
+    "allowJs": true
+  }
+}
