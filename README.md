@@ -23,6 +23,7 @@ const oauthClient = new OAuth2AuthCodePkceClient({
     tokenUrl: 'https://auth.example.com/token/',
     clientId: 'identifier-for-the-app-which-is-registered-in-the-backend',
     redirectUrl: 'https://app.example.com/return/'`,
+    storeRefreshToken: false,
     // optional:
     onAccessTokenExpiry() {
         // when the access token has expired
@@ -40,6 +41,8 @@ const oauthClient = new OAuth2AuthCodePkceClient({
     }
 });
 ```
+
+The optional `storeRefreshToken` setting tells the client to store refresh tokens from the auth server in the browser's local storage in order to be logged in indefinitely (until calling `reset()`), defaults to `false`. This is not considered secure, so use cautiously. The refresh token is stored in memory anyway, so the users are logged in as long as they don't refresh/close the page or the access token is valid.
 
 ### Authenticate
 

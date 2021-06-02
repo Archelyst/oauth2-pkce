@@ -29,6 +29,7 @@ export interface Configuration {
     tokenUrl: URL;
     extraAuthorizationParams?: ObjStringDict;
     extraRefreshParams?: ObjStringDict;
+    storeRefreshToken?: boolean;
 }
 
 interface State {
@@ -86,6 +87,7 @@ export class OAuth2AuthCodePkceClient {
     private state: State = { };
     private authCodeForAccessTokenPromise?: Promise<TokenResponse>;
     private refreshTokenForAccessTokenPromise?: Promise<TokenResponse>;
+    private refreshToken: string;
 
     constructor (config: Configuration) {
         this.config = config;
@@ -420,9 +422,17 @@ export class OAuth2AuthCodePkceClient {
 
     private recoverState() {
         this.state = JSON.parse(localStorage.getItem(LOCALSTORAGE_STATE) || '{}');
+        if (!this.config.storeRefreshToken) {
+            this.state.refreshToken = this.refreshToken;
+        }
     }
 
     private saveState() {
-        localStorage.setItem(LOCALSTORAGE_STATE, JSON.stringify(this.state));
+        this.refreshToken = this.state.refreshToken;
+        const state = { ...this.state };
+        if (!this.config.storeRefreshToken) {
+            delete state.refreshToken;
+        }
+        localStorage.setItem(LOCALSTORAGE_STATE, JSON.stringify(state));
     }
 }
