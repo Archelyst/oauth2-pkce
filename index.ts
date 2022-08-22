@@ -38,6 +38,7 @@ interface State {
     authorizationCode?: string;
     codeChallenge?: string;
     codeVerifier?: string;
+    idToken?: string;
     refreshToken?: string;
     stateQueryParam?: string;
     scopes?: string[];
@@ -47,8 +48,9 @@ export type Scopes = string[];
 
 export interface AccessContext {
     accessToken?: string;
-    scopes?: Scopes;
+    idToken?: string;
     refreshToken?: string;
+    scopes?: Scopes;
 }
 
 export interface TokenResponse {
@@ -56,6 +58,7 @@ export interface TokenResponse {
     expiresIn?: string;
     scope?: string;
     refreshToken?: string;
+    idToken?: string;
 }
 
 
@@ -180,13 +183,21 @@ export class OAuth2AuthCodePkceClient {
     }
 
     /**
-     * Using a previously fetched authorization code try to get an access token.
-     * If there is no authorization code return the previously fetched access token.
+     * @deprecated The name does not reflect the return value. Use `getTokens()` instead.
      */
     public async getAccessToken() {
+        return this.getTokens();
+    }
+
+    /**
+     * Using a previously fetched authorization code try to get the auth tokens.
+     * If there is no authorization code return the previously fetched access token.
+     */
+    public async getTokens(): Promise<AccessContext> {
         const {
             accessToken,
             authorizationCode,
+            idToken,
             refreshToken,
             scopes
         } = this.state;
@@ -205,7 +216,7 @@ export class OAuth2AuthCodePkceClient {
             }
         }
 
-        return { accessToken, scopes, refreshToken };
+        return Promise.resolve({ accessToken, idToken, refreshToken, scopes });
     }
 
     /**
@@ -396,20 +407,24 @@ export class OAuth2AuthCodePkceClient {
             }
             throw toErrorObject(jsonContent.error);
         }
-        const { access_token, expires_in, refresh_token, scope } = jsonContent;
+        const { access_token, expires_in, id_token, refresh_token, scope } = jsonContent;
         return {
             accessToken: access_token,
             expiresIn: expires_in,
+            idToken: id_token,
             refreshToken: refresh_token,
             scope
         };
     }
 
     private setTokens(tokenResponse: TokenResponse) {
-        const { accessToken, expiresIn, refreshToken, scope } = tokenResponse;
+        const { accessToken, expiresIn, idToken, refreshToken, scope } = tokenResponse;
         this.state.accessToken = accessToken;
         this.state.accessTokenExpiry = (new Date(Date.now() + (parseInt(expiresIn, 10) * 1000)))
             .toString();
+        if (idToken) {
+            this.state.idToken = idToken;
+        }
         if (refreshToken) {
             this.state.refreshToken = refreshToken;
         }

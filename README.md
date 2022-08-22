@@ -58,12 +58,14 @@ Afterwards, the user is redirected to the `redirectUrl` configured above. The re
 
 ```
 oauthClient.receiveCode();
-const accessToken = await oauthClient.getAccessToken();
+const tokens = await oauthClient.getTokens();
 ```
+
+This library supports access tokens, refresh tokens, and id tokens.
 
 ### Use the tokens
 
-Now you can use the token in order to make requests.  There are some mechanisms to help you with that.
+Now you can use the token in order to make requests. There are some mechanisms to help you with that.
 
 #### Automatically Get New Access Token
 
