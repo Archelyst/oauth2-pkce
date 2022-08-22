@@ -9,7 +9,7 @@ export class ErrorOAuth2 {
  */
 // for really unknown errors
 export class ErrorUnknown extends ErrorOAuth2 {
-    constructor (readonly message) {
+    constructor(readonly message: string) {
         super();
     }
 }
@@ -72,7 +72,7 @@ export class ErrorInvalidGrant extends ErrorAccessTokenResponse {
 export class ErrorUnsupportedGrantType extends ErrorAccessTokenResponse {
 }
 
-export const RAW_ERROR_TO_ERROR_CLASS_MAP = {
+export const RAW_ERROR_TO_ERROR_CLASS_MAP: {[error_name: string]: typeof ErrorOAuth2} = {
     invalid_request: ErrorInvalidRequest,
     invalid_grant: ErrorInvalidGrant,
     unauthorized_client: ErrorUnauthorizedClient,
@@ -89,10 +89,10 @@ export const RAW_ERROR_TO_ERROR_CLASS_MAP = {
 /**
  * Convert an error string returned from the server to an error object.
  */
-export function toErrorObject(rawError: string): ErrorOAuth2 {
+export const toErrorObject = (rawError: string): ErrorOAuth2 => {
     const errorClass = RAW_ERROR_TO_ERROR_CLASS_MAP[rawError];
     return errorClass ? new errorClass() : new ErrorUnknown(rawError);
-}
+};
 
 /**
  * WWW-Authenticate error object structure

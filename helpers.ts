@@ -19,7 +19,7 @@ const PKCE_CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345
  * `Bearer realm="example.com",error="invalid_client"` becomes
  * `{ realm: "example.com", error: "invalid_client" }`.
  */
-export function parseWwwAuthenticateHeader(header: string): ErrorWWWAuthenticate {
+export const parseWwwAuthenticateHeader = (header: string): ErrorWWWAuthenticate => {
     const headerMap = header
         .slice('Bearer '.length)
         .replace(/"/g, '')
@@ -35,24 +35,24 @@ export function parseWwwAuthenticateHeader(header: string): ErrorWWWAuthenticate
         errorDescription: headerMap.error_description,
         errorUri: headerMap.error_uri
     };
-}
+};
 
 /**
  * Implements *base64url-encode* (RFC 4648 § 5) without padding, which is NOT
  * the same as regular base64 encoding.
  */
-function base64urlEncode(value: string): string {
+const base64urlEncode = (value: string): string => {
     let base64 = btoa(value);
     base64 = base64.replace(/\+/g, '-');
     base64 = base64.replace(/\//g, '_');
     base64 = base64.replace(/=/g, '');
     return base64;
-}
+};
 
 /**
  * Extract a parameter from a query string
  */
-export function extractParamFromUrl(param: string, url: string): string | undefined {
+export const extractParamFromUrl = (param: string, url: string): string | undefined  => {
     let queryString = url.split('?');
     if (queryString.length < 2) {
         return undefined;
@@ -66,21 +66,20 @@ export function extractParamFromUrl(param: string, url: string): string | undefi
             return decodeURIComponent(value);
         }
     }
-}
+    return undefined;
+};
 
 /**
  * Convert the keys and values of an object to a url query string
  */
-export function objectToQueryString(dict): string {
-    return Object.entries(dict).map(
-        ([key, val]: [string, string]) => `${key}=${encodeURIComponent(val)}`
-    ).join('&');
-}
+export const objectToQueryString = (dict: object): string => Object.entries(dict).map(
+    ([key, val]: [string, string]) => `${key}=${encodeURIComponent(val)}`
+).join('&');
 
 /**
  * Generate a code_verifier and code_challenge, as specified in rfc7636.
  */
-export async function generatePKCECodeChallengeAndVerifier() {
+export const generatePKCECodeChallengeAndVerifier = async () => {
     const output = new Uint32Array(RECOMMENDED_CODE_VERIFIER_LENGTH);
     crypto.getRandomValues(output);
     const codeVerifier = base64urlEncode(Array
@@ -98,16 +97,16 @@ export async function generatePKCECodeChallengeAndVerifier() {
     }
     const codeChallenge = base64urlEncode(binary);
     return { codeChallenge, codeVerifier };
-}
+};
 
 /**
  * Generate random state to be passed for anti-csrf.
  */
-export function generateRandomState(lengthOfState: number): string {
+export const generateRandomState = (lengthOfState: number): string => {
     const output = new Uint32Array(lengthOfState);
     crypto.getRandomValues(output);
     return Array
         .from(output)
         .map((num: number) => PKCE_CHARSET[num % PKCE_CHARSET.length])
         .join('');
-}
+};

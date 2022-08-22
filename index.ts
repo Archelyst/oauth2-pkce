@@ -72,7 +72,7 @@ const HEADER_WWW_AUTHENTICATE = 'WWW-Authenticate';
  */
 export const RECOMMENDED_STATE_LENGTH = 32;
 
-type FetchFunc = (input: Request | string, ...rest) => Promise<Response>;
+type FetchFunc = (input: Request | string, ...rest: any[]) => Promise<Response>;
 
 
 /**
@@ -89,7 +89,7 @@ export class OAuth2AuthCodePkceClient {
     private refreshTokenForAccessTokenPromise?: Promise<TokenResponse>;
     private refreshToken: string;
 
-    constructor (config: Configuration) {
+    constructor(config: Configuration) {
         this.config = config;
         this.recoverState();
     }
@@ -205,7 +205,7 @@ export class OAuth2AuthCodePkceClient {
             }
         }
 
-        return { accessToken: accessToken, scopes, refreshToken };
+        return { accessToken, scopes, refreshToken };
     }
 
     /**
@@ -232,92 +232,6 @@ export class OAuth2AuthCodePkceClient {
         const tokenResponse = await this.refreshTokenForAccessTokenPromise;
         this.refreshTokenForAccessTokenPromise = undefined;
         return this.setTokens(tokenResponse);
-    }
-
-    /**
-     * Use the current grant code to fetch a fresh authorization token.
-     */
-    private async fetchAccessTokenUsingCode() {
-        const { authorizationCode, codeVerifier = '' } = this.state;
-        const { clientId, redirectUrl} = this.config;
-
-        if (!codeVerifier) {
-            console.warn('No code verifier is being sent.');
-        }
-        else if (!authorizationCode) {
-            console.warn('No authorization grant code is being passed.');
-        }
-
-        const url = this.config.tokenUrl;
-        const body = 'grant_type=authorization_code&'
-            + `code=${encodeURIComponent(authorizationCode || '')}&`
-            + `redirect_uri=${encodeURIComponent(redirectUrl)}&`
-            + `client_id=${encodeURIComponent(clientId)}&`
-            + `code_verifier=${codeVerifier}`;
-        return this.makeTokenRequest(url, body);
-    }
-
-    /**
-     * Fetch a new access token using the refresh token.
-     */
-    private fetchAccessTokenUsingRefreshToken() {
-        const { extraRefreshParams, clientId, tokenUrl } = this.config;
-        const { refreshToken } = this.state;
-
-        if (!refreshToken) {
-            console.warn('No refresh token is present.');
-        }
-
-        const url = tokenUrl;
-        let body = 'grant_type=refresh_token&'
-            + `refresh_token=${refreshToken}&`
-            + `client_id=${clientId}`;
-
-        if (extraRefreshParams) {
-            body = `${url}&${objectToQueryString(extraRefreshParams)}`;
-        }
-        return this.makeTokenRequest(url, body);
-    }
-
-    private async makeTokenRequest(url, body): Promise<TokenResponse> {
-        const tokenResponse = await fetch(url, {
-            method: 'POST',
-            body,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
-        const jsonContent = await tokenResponse.json();
-        if (!tokenResponse.ok) {
-            if (jsonContent.error === 'invalid_grant' && this.config.onInvalidGrant) {
-                await this.config.onInvalidGrant();
-            }
-            throw toErrorObject(jsonContent.error);
-        }
-        const { access_token, expires_in, refresh_token, scope } = jsonContent;
-        return {
-            accessToken: access_token,
-            expiresIn: expires_in,
-            refreshToken: refresh_token,
-            scope
-        };
-    }
-
-    private setTokens(tokenResponse: TokenResponse) {
-        const { accessToken, expiresIn, refreshToken, scope } = tokenResponse;
-        this.state.accessToken = accessToken;
-        this.state.accessTokenExpiry = (new Date(Date.now() + (parseInt(expiresIn) * 1000)))
-            .toString();
-        if (refreshToken) {
-            this.state.refreshToken = refreshToken;
-        }
-        if (scope) {
-            // Multiple scopes are passed and delimited by spaces,
-            // despite using the singular name "scope".
-            this.state.scopes = scope.split(' ');
-        }
-        this.saveState();
-        return { accessToken: this.state.accessToken, scopes: scope ? this.state.scopes : [] };
     }
 
     /**
@@ -365,6 +279,7 @@ export class OAuth2AuthCodePkceClient {
      * Put the access token on `fetch()` `Request`s. Gets a fresh access token
      * if the current one is invalid.
      * This function is meant to be wired into the request processing of an app / a framework.
+     *
      * @see decorateFetchWithInterceptors
      */
     public async requestInterceptor(request: Request) {
@@ -376,6 +291,7 @@ export class OAuth2AuthCodePkceClient {
     /**
      * Handle auth related errors in `fetch()` `Response`s.
      * This function is meant to be wired into the response processing of an app / a framework.
+     *
      * @see decorateFetchWithInterceptors
      */
     public async responseInterceptor(response: Response) {
@@ -418,6 +334,92 @@ export class OAuth2AuthCodePkceClient {
     public isAccessTokenExpired(): boolean {
         const { accessTokenExpiry } = this.state;
         return Boolean(accessTokenExpiry && (new Date()) >= (new Date(accessTokenExpiry)));
+    }
+
+    /**
+     * Use the current grant code to fetch a fresh authorization token.
+     */
+    private async fetchAccessTokenUsingCode() {
+        const { authorizationCode, codeVerifier = '' } = this.state;
+        const { clientId, redirectUrl} = this.config;
+
+        if (!codeVerifier) {
+            console.warn('No code verifier is being sent.');
+        }
+        else if (!authorizationCode) {
+            console.warn('No authorization grant code is being passed.');
+        }
+
+        const url = this.config.tokenUrl;
+        const body = 'grant_type=authorization_code&'
+            + `code=${encodeURIComponent(authorizationCode || '')}&`
+            + `redirect_uri=${encodeURIComponent(redirectUrl)}&`
+            + `client_id=${encodeURIComponent(clientId)}&`
+            + `code_verifier=${codeVerifier}`;
+        return this.makeTokenRequest(url, body);
+    }
+
+    /**
+     * Fetch a new access token using the refresh token.
+     */
+    private fetchAccessTokenUsingRefreshToken() {
+        const { extraRefreshParams, clientId, tokenUrl } = this.config;
+        const { refreshToken } = this.state;
+
+        if (!refreshToken) {
+            console.warn('No refresh token is present.');
+        }
+
+        const url = tokenUrl;
+        let body = 'grant_type=refresh_token&'
+            + `refresh_token=${refreshToken}&`
+            + `client_id=${clientId}`;
+
+        if (extraRefreshParams) {
+            body = `${url}&${objectToQueryString(extraRefreshParams)}`;
+        }
+        return this.makeTokenRequest(url, body);
+    }
+
+    private async makeTokenRequest(url: string, body: string): Promise<TokenResponse> {
+        const tokenResponse = await fetch(url, {
+            method: 'POST',
+            body,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+        const jsonContent = await tokenResponse.json();
+        if (!tokenResponse.ok) {
+            if (jsonContent.error === 'invalid_grant' && this.config.onInvalidGrant) {
+                await this.config.onInvalidGrant();
+            }
+            throw toErrorObject(jsonContent.error);
+        }
+        const { access_token, expires_in, refresh_token, scope } = jsonContent;
+        return {
+            accessToken: access_token,
+            expiresIn: expires_in,
+            refreshToken: refresh_token,
+            scope
+        };
+    }
+
+    private setTokens(tokenResponse: TokenResponse) {
+        const { accessToken, expiresIn, refreshToken, scope } = tokenResponse;
+        this.state.accessToken = accessToken;
+        this.state.accessTokenExpiry = (new Date(Date.now() + (parseInt(expiresIn, 10) * 1000)))
+            .toString();
+        if (refreshToken) {
+            this.state.refreshToken = refreshToken;
+        }
+        if (scope) {
+            // Multiple scopes are passed and delimited by spaces,
+            // despite using the singular name "scope".
+            this.state.scopes = scope.split(' ');
+        }
+        this.saveState();
+        return { accessToken: this.state.accessToken, scopes: scope ? this.state.scopes : [] };
     }
 
     private recoverState() {
