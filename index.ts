@@ -417,7 +417,7 @@ export class OAuth2AuthCodePkceClient {
         };
     }
 
-    private setTokens(tokenResponse: TokenResponse) {
+    private setTokens(tokenResponse: TokenResponse): AccessContext {
         const { accessToken, expiresIn, idToken, refreshToken, scope } = tokenResponse;
         this.state.accessToken = accessToken;
         this.state.accessTokenExpiry = (new Date(Date.now() + (parseInt(expiresIn, 10) * 1000)))
@@ -434,7 +434,12 @@ export class OAuth2AuthCodePkceClient {
             this.state.scopes = scope.split(' ');
         }
         this.saveState();
-        return { accessToken: this.state.accessToken, scopes: scope ? this.state.scopes : [] };
+        return {
+            accessToken: this.state.accessToken,
+            idToken: this.state.idToken,
+            refreshToken: this.state.refreshToken,
+            scopes: scope ? this.state.scopes : []
+          };
     }
 
     private recoverState() {
