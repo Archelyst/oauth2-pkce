@@ -339,6 +339,11 @@ export class OAuth2AuthCodePkceClient {
         return !!this.state.accessToken;
     }
 
+    public hasAuthorizationCode(): boolean {
+        this.receiveCode();
+        return !!this.state.authorizationCode;
+    }
+
     /**
      * Checks to see if the access token has expired.
      */
