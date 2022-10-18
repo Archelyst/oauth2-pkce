@@ -350,7 +350,7 @@ export class OAuth2AuthCodePkceClient {
     /**
      * Use the current grant code to fetch a fresh authorization token.
      */
-    private async fetchAccessTokenUsingCode() {
+    private async fetchAccessTokenUsingCode(oneTimeParams?: ObjStringDict) {
         const { authorizationCode, codeVerifier = '' } = this.state;
         const { clientId, redirectUrl} = this.config;
 
@@ -366,7 +366,8 @@ export class OAuth2AuthCodePkceClient {
             + `code=${encodeURIComponent(authorizationCode || '')}&`
             + `redirect_uri=${encodeURIComponent(redirectUrl)}&`
             + `client_id=${encodeURIComponent(clientId)}&`
-            + `code_verifier=${codeVerifier}`;
+            + `code_verifier=${codeVerifier}&`
+            + `${objectToQueryString(oneTimeParams)}`;
         return this.makeTokenRequest(url, body);
     }
 
