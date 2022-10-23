@@ -72,7 +72,7 @@ Now you can use the token in order to make requests. There are some mechanisms t
 Instead of checking the validity of an access token all the time, the app might just assume it is valid. When using the `fetch()` API there is a way to automatically get a new access token in case the backend indicates that the access token is no longer valid. Just wrap your `fetch` function like so:
 
 ```
-fetch = oauthClient.makeRetryFetchFunction(fetch);
+window.fetch = oauthClient.makeRetryFetchFunction(window.fetch);
 ```
 
 This will wrap the original `fetch` function and transparently make it use the refresh token to get a new access token and retry.
@@ -101,7 +101,7 @@ function handleResponse(response) {
 There is also a shortcut in case your setup doesn't feature interceptors:
 
 ```
-fetch = oauthClient.decorateFetchWithInterceptors(fetch);
+window.fetch = oauthClient.decorateFetchWithInterceptors(window.fetch);
 ```
 
 ### Check Authorization State
