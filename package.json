@@ -1,6 +1,6 @@
 {
   "name": "oauth2-pkce",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "An OAuth 2.0 client library for the Authorization Code flow with PKCE",
   "main": "index.js",
   "types": "*.d.ts",

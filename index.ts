@@ -187,13 +187,6 @@ export class OAuth2AuthCodePkceClient {
     }
 
     /**
-     * @deprecated The name does not reflect the return value. Use `getTokens()` instead.
-     */
-    public async getAccessToken() {
-        return this.getTokens();
-    }
-
-    /**
      * Using a previously fetched authorization code try to get the auth tokens.
      * If there is no authorization code return the previously fetched access token.
      */
@@ -225,7 +218,7 @@ export class OAuth2AuthCodePkceClient {
 
     /**
      * Fetch an access token from the remote service.
-     * This get implicitly called by `getAccessToken()`.
+     * This gets implicitly called by `getTokens()`.
      */
     public async exchangeAuthCodeForAccessToken(): Promise<AccessContext> {
         if (!this.authCodeForAccessTokenPromise) {
