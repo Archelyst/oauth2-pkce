@@ -57,7 +57,7 @@ This will navigate to the auth server where the user is asked to login and ackno
 Afterwards, the user is redirected to the `redirectUrl` configured above. The redirect includes an authorization code which you need to grab and then use it to get the tokens with which further requests can be authorized:
 
 ```
-oauthClient.receiveCode();
+await oauthClient.receiveCode();
 const tokens = await oauthClient.getTokens();
 ```
 
@@ -86,12 +86,12 @@ Many frameworks or libraries offer the concept of request/response interceptors.
 httpClient.registerRequestInterceptor(oauthClient.requestInterceptor);
 httpClient.registerResponseInterceptor(oauthClient.responseInterceptor);
 // or manually
-function handleRequest(request) {
+async function handleRequest(request) {
     request = await oauthClient.requestInterceptor(request);
     ...
     return request;
 }
-function handleResponse(response) {
+async function handleResponse(response) {
     response = await oauthClient.responseInterceptor(response);
     ...
     return response;
@@ -113,10 +113,35 @@ With `oauthClient.isAuthorized()` you can check whether the user has an access t
 When a user logs out, all tokens need to be dismissed:
 
 ```
-oauthClient.reset()
+await oauthClient.reset()
 ```
 
 This doesn't redirect or do anything else to indicate to the user that they are no longer logged in. That's the responsibility of the app, e. g. to redirect to the login page.
+
+## Storage
+
+OAuth2PKCE holds some state like the current access token. It needs to be persisted in a way that survives reloads because of the redirects during authentication. By default [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) is used, but you can provide your own implementation, e.g. if you're creating an app and you want to use platform specific storage:
+
+```
+import Storage from 'oauth2-pkce';
+
+class MyOwnStorage implements Storage {
+    saveState(serializedState: string) { ... // store somewhere }
+    loadState() { return ...; // return the stored string }
+}
+
+const myOwnStorage = new MyOwnStorage();
+
+const oauthClient = new OAuth2AuthCodePkceClient(config, myOwnStorage);
+```
+
+Both methods can by async / return a promise.
+
+## Changelog
+
+### 2.0.0
+* Feature: Made the state storage pluggable
+* Breaking change: `receiveCode()` and `reset()` are async now
 
 ## Acknowledgements
 

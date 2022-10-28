@@ -1,6 +1,5 @@
 import {
     ErrorInvalidReturnedStateParam,
-    ErrorInvalidToken,
     ErrorNoAccessToken,
     ErrorNoAuthCode,
     toErrorObject
@@ -61,11 +60,10 @@ export interface TokenResponse {
     idToken?: string;
 }
 
-
-/**
- * To store the OAuth client's data between websites due to redirection.
- */
-const LOCALSTORAGE_STATE = 'oauth2authcodepkce-state';
+export interface Storage {
+    saveState(serializedState: string): void | Promise<void>;
+    loadState(): string | null | Promise<string | null>;
+}
 
 const HEADER_AUTHORIZATION = 'Authorization';
 const HEADER_WWW_AUTHENTICATE = 'WWW-Authenticate';
@@ -91,18 +89,23 @@ export class OAuth2AuthCodePkceClient {
     private authCodeForAccessTokenPromise?: Promise<TokenResponse>;
     private refreshTokenForAccessTokenPromise?: Promise<TokenResponse>;
     private refreshToken: string;
+    private storage: Storage;
+    private ready: Promise<void>;
+    private setReady: Function;
 
-    constructor(config: Configuration) {
+    constructor(config: Configuration, storage?: Storage) {
         this.config = config;
+        this.storage = storage || LocalStorage;
+        this.ready = new Promise(resolve => this.setReady = resolve);
         this.recoverState();
     }
 
     /**
      * Resets the state of the client. Equivalent to "logging out" the user.
      */
-    public reset() {
+    public async reset() {
         this.state = { };
-        this.saveState();
+        await this.saveState();
         this.authCodeForAccessTokenPromise = undefined;
         this.refreshTokenForAccessTokenPromise = undefined;
     }
@@ -162,7 +165,8 @@ export class OAuth2AuthCodePkceClient {
     /**
      * Read the code from the URL and store it.
      */
-    public receiveCode() {
+    public async receiveCode() {
+        await this.ready;
         const error = extractParamFromUrl('error', location.href);
         if (error) {
             throw toErrorObject(error);
@@ -294,7 +298,7 @@ export class OAuth2AuthCodePkceClient {
      * @see decorateFetchWithInterceptors
      */
     public async requestInterceptor(request: Request) {
-        const tokenContext = await this.getAccessToken();
+        const tokenContext = await this.getTokens();
         request.headers.set(HEADER_AUTHORIZATION, `Bearer ${tokenContext.accessToken}`);
         return request;
     }
@@ -417,7 +421,7 @@ export class OAuth2AuthCodePkceClient {
         };
     }
 
-    private setTokens(tokenResponse: TokenResponse): AccessContext {
+    private async setTokens(tokenResponse: TokenResponse): Promise<AccessContext> {
         const { accessToken, expiresIn, idToken, refreshToken, scope } = tokenResponse;
         this.state.accessToken = accessToken;
         this.state.accessTokenExpiry = (new Date(Date.now() + (parseInt(expiresIn, 10) * 1000)))
@@ -433,7 +437,7 @@ export class OAuth2AuthCodePkceClient {
             // despite using the singular name "scope".
             this.state.scopes = scope.split(' ');
         }
-        this.saveState();
+        await this.saveState();
         return {
             accessToken: this.state.accessToken,
             idToken: this.state.idToken,
@@ -442,19 +446,31 @@ export class OAuth2AuthCodePkceClient {
           };
     }
 
-    private recoverState() {
-        this.state = JSON.parse(localStorage.getItem(LOCALSTORAGE_STATE) || '{}');
+    private async recoverState() {
+        this.state = JSON.parse(await this.storage.loadState() || '{}');
+        this.setReady();
         if (!this.config.storeRefreshToken) {
             this.state.refreshToken = this.refreshToken;
         }
     }
 
-    private saveState() {
+    private async saveState() {
         this.refreshToken = this.state.refreshToken;
         const state = { ...this.state };
         if (!this.config.storeRefreshToken) {
             delete state.refreshToken;
         }
-        localStorage.setItem(LOCALSTORAGE_STATE, JSON.stringify(state));
+        await this.storage.saveState(JSON.stringify(state));
     }
 }
+
+
+/**
+ * To store the OAuth client's data between websites due to redirection.
+ */
+const LOCALSTORAGE_STATE = 'oauth2authcodepkce-state';
+
+const LocalStorage: Storage = {
+    saveState: (serializedState: string) => localStorage.setItem(LOCALSTORAGE_STATE, serializedState),
+    loadState: () => localStorage.getItem(LOCALSTORAGE_STATE)
+};
