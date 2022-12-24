@@ -157,6 +157,9 @@ Both methods can by async / return a promise.
 
 ## Changelog
 
+### 2.1.0
+* Added oneTimeParams to `getTokens()` and `exchangeAuthCodeForAccessToken()`
+
 ### 2.0.0
 * Feature: Made the state storage pluggable
 * Breaking change: `receiveCode()` and `reset()` are async now
