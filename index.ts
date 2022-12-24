@@ -190,7 +190,7 @@ export class OAuth2AuthCodePkceClient {
      * Using a previously fetched authorization code try to get the auth tokens.
      * If there is no authorization code return the previously fetched access token.
      */
-    public async getTokens(): Promise<AccessContext> {
+    public async getTokens(oneTimeParams?: ObjStringDict): Promise<AccessContext> {
         const {
             accessToken,
             authorizationCode,
@@ -200,7 +200,7 @@ export class OAuth2AuthCodePkceClient {
         } = this.state;
 
         if (authorizationCode) {
-            return this.exchangeAuthCodeForAccessToken();
+            return this.exchangeAuthCodeForAccessToken(oneTimeParams);
         }
 
         if (!accessToken) {
@@ -220,9 +220,9 @@ export class OAuth2AuthCodePkceClient {
      * Fetch an access token from the remote service.
      * This gets implicitly called by `getTokens()`.
      */
-    public async exchangeAuthCodeForAccessToken(): Promise<AccessContext> {
+    public async exchangeAuthCodeForAccessToken(oneTimeParams?: ObjStringDict): Promise<AccessContext> {
         if (!this.authCodeForAccessTokenPromise) {
-            this.authCodeForAccessTokenPromise = this.fetchAccessTokenUsingCode();
+            this.authCodeForAccessTokenPromise = this.fetchAccessTokenUsingCode(oneTimeParams);
         }
         const tokenResponse = await this.authCodeForAccessTokenPromise;
         this.authCodeForAccessTokenPromise = undefined;
@@ -347,7 +347,7 @@ export class OAuth2AuthCodePkceClient {
     /**
      * Use the current grant code to fetch a fresh authorization token.
      */
-    private async fetchAccessTokenUsingCode() {
+    private async fetchAccessTokenUsingCode(oneTimeParams?: ObjStringDict) {
         const { authorizationCode, codeVerifier = '' } = this.state;
         const { clientId, redirectUrl} = this.config;
 
@@ -363,7 +363,8 @@ export class OAuth2AuthCodePkceClient {
             + `code=${encodeURIComponent(authorizationCode || '')}&`
             + `redirect_uri=${encodeURIComponent(redirectUrl)}&`
             + `client_id=${encodeURIComponent(clientId)}&`
-            + `code_verifier=${codeVerifier}`;
+            + `code_verifier=${codeVerifier}&`
+            + `${objectToQueryString(oneTimeParams)}`;
         return this.makeTokenRequest(url, body);
     }
 
