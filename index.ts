@@ -189,6 +189,10 @@ export class OAuth2AuthCodePkceClient {
     /**
      * Using a previously fetched authorization code try to get the auth tokens.
      * If there is no authorization code return the previously fetched access token.
+     *
+     * @param oneTimeParams A way to specify "one time" query string
+     * parameters when fetching tokens from the auth server, usually for
+     * values which need to change at run-time.
      */
     public async getTokens(oneTimeParams?: ObjStringDict): Promise<AccessContext> {
         const {
@@ -364,7 +368,7 @@ export class OAuth2AuthCodePkceClient {
             + `redirect_uri=${encodeURIComponent(redirectUrl)}&`
             + `client_id=${encodeURIComponent(clientId)}&`
             + `code_verifier=${codeVerifier}&`
-            + `${objectToQueryString(oneTimeParams)}`;
+            + objectToQueryString(oneTimeParams);
         return this.makeTokenRequest(url, body);
     }
 

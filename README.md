@@ -118,7 +118,25 @@ await oauthClient.reset()
 
 This doesn't redirect or do anything else to indicate to the user that they are no longer logged in. That's the responsibility of the app, e. g. to redirect to the login page.
 
-## Storage
+### Additional Parameters
+
+While most OAuth servers are just fine with the standard parameters, you have several options to pass additional parameters to the authentication server if required.
+
+#### Static Configuration Parameters
+* Add a map of parameters as `extraAuthorizationParams` to the configuration. They will be sent to the server when a new auth code is requested.
+* The same works for the request that fetches a refresh token: add parameters to the configuration as `extraRefreshParams`.
+
+These parameters are defined once and used through the lifetime of the client.
+
+#### Dynamic Parameters
+Several functions allow to pass `oneTimeParams` in order to send custom parameters to the server that might change in the course of the program's lifetime: `requestAuthorizationCode()`, `getTokens()`, and `exchangeAuthCodeForAccessToken()`.
+
+#### Precedence
+By providing additional parameters, you can also overwrite the standard ones. Also, the dynamicly provided parameters supersede the ones provided in the config:
+
+    dynamic parameters overwrite > configuration parameters overwrite > standard parameters
+
+### Storage
 
 OAuth2PKCE holds some state like the current access token. It needs to be persisted in a way that survives reloads because of the redirects during authentication. By default [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) is used, but you can provide your own implementation, e.g. if you're creating an app and you want to use platform specific storage:
 

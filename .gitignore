@@ -2,4 +2,3 @@ node_modules
 *.d.ts
 *.js
 index.umd.js
-package-lock.json
