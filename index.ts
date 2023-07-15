@@ -368,7 +368,7 @@ export class OAuth2AuthCodePkceClient {
             + `redirect_uri=${encodeURIComponent(redirectUrl)}&`
             + `client_id=${encodeURIComponent(clientId)}&`
             + `code_verifier=${codeVerifier}&`
-            + objectToQueryString(oneTimeParams);
+            + oneTimeParams ? ('&' + objectToQueryString(oneTimeParams)) : '';
         return this.makeTokenRequest(url, body);
     }
 

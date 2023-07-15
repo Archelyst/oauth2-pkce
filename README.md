@@ -157,6 +157,9 @@ Both methods can by async / return a promise.
 
 ## Changelog
 
+### 2.1.1
+* Fixed optional oneTimeParams
+
 ### 2.1.0
 * Added oneTimeParams to `getTokens()` and `exchangeAuthCodeForAccessToken()`
 
