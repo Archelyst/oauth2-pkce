@@ -363,12 +363,15 @@ export class OAuth2AuthCodePkceClient {
         }
 
         const url = this.config.tokenUrl;
-        const body = 'grant_type=authorization_code&'
-            + `code=${encodeURIComponent(authorizationCode || '')}&`
-            + `redirect_uri=${encodeURIComponent(redirectUrl)}&`
-            + `client_id=${encodeURIComponent(clientId)}&`
-            + `code_verifier=${codeVerifier}&`
-            + oneTimeParams ? ('&' + objectToQueryString(oneTimeParams)) : '';
+        const paramsObject = {
+            grant_type: 'authorization_code',
+            code: authorizationCode,
+            redirect_uri: redirectUrl,
+            client_id: clientId,
+            code_verifier: codeVerifier,
+            ...oneTimeParams
+        }
+        const body = new URLSearchParams(paramsObject).toString();
         return this.makeTokenRequest(url, body);
     }
 
