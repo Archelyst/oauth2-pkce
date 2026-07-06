@@ -72,6 +72,9 @@ export class ErrorInvalidGrant extends ErrorAccessTokenResponse {
 export class ErrorUnsupportedGrantType extends ErrorAccessTokenResponse {
 }
 
+export class ErrorAccessTokenExpired extends ErrorOAuth2 {
+}
+
 export const RAW_ERROR_TO_ERROR_CLASS_MAP: {[error_name: string]: typeof ErrorOAuth2} = {
     invalid_request: ErrorInvalidRequest,
     invalid_grant: ErrorInvalidGrant,

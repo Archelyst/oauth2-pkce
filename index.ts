@@ -1,4 +1,5 @@
 import {
+    ErrorAccessTokenExpired,
     ErrorInvalidReturnedStateParam,
     ErrorNoAccessToken,
     ErrorNoAuthCode,
@@ -215,6 +216,7 @@ export class OAuth2AuthCodePkceClient {
             if (this.config.onAccessTokenExpiry) {
                 return this.config.onAccessTokenExpiry();
             }
+            throw new ErrorAccessTokenExpired();
         }
 
         return Promise.resolve({ accessToken, idToken, refreshToken, scopes });
