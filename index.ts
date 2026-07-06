@@ -16,17 +16,17 @@ import {
 export * from './errors';
 
 export type ObjStringDict = { [_: string]: string };
-export type URL = string;
+export type UrlString = string;
 
 export interface Configuration {
-    authorizationUrl: URL;
+    authorizationUrl: UrlString;
     clientId: string;
     onAccessTokenExpiry?: () => Promise<AccessContext>;
     onInvalidGrant?: () => Promise<any> | void;
     onInvalidToken?: () => Promise<any> | void;
-    redirectUrl: URL;
+    redirectUrl: UrlString;
     scopes?: string[];
-    tokenUrl: URL;
+    tokenUrl: UrlString;
     extraAuthorizationParams?: ObjStringDict;
     extraRefreshParams?: ObjStringDict;
     storeRefreshToken?: boolean;
@@ -92,7 +92,7 @@ export class OAuth2AuthCodePkceClient {
     private refreshToken: string;
     private storage: Storage;
     private ready: Promise<void>;
-    private setReady: Function;
+    private setReady!: () => void;
 
     constructor(config: Configuration, storage?: Storage) {
         this.config = config;
@@ -427,8 +427,10 @@ export class OAuth2AuthCodePkceClient {
     private async setTokens(tokenResponse: TokenResponse): Promise<AccessContext> {
         const { accessToken, expiresIn, idToken, refreshToken, scope } = tokenResponse;
         this.state.accessToken = accessToken;
-        this.state.accessTokenExpiry = (new Date(Date.now() + (parseInt(expiresIn, 10) * 1000)))
-            .toString();
+        if (expiresIn) {
+            this.state.accessTokenExpiry = (new Date(Date.now() + (parseInt(expiresIn, 10) * 1000)))
+                .toString();
+        }
         if (idToken) {
             this.state.idToken = idToken;
         }
