@@ -130,7 +130,7 @@ export class OAuth2AuthCodePkceClient {
             codeVerifier,
             stateQueryParam
         };
-        this.saveState();
+        await this.saveState();
 
         let url = this.config.authorizationUrl
             + '?response_type=code&'
