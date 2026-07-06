@@ -392,7 +392,7 @@ export class OAuth2AuthCodePkceClient {
             + `client_id=${clientId}`;
 
         if (extraRefreshParams) {
-            body = `${url}&${objectToQueryString(extraRefreshParams)}`;
+            body = `${body}&${objectToQueryString(extraRefreshParams)}`;
         }
         return this.makeTokenRequest(url, body);
     }
