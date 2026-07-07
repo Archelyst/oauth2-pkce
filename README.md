@@ -174,6 +174,16 @@ Both methods can by async / return a promise.
 
 ## Changelog
 
+### 3.0.0
+* Breaking: `getTokens()` now throws `ErrorAccessTokenExpired` when the token has expired and no `onAccessTokenExpiry` handler is configured (previously returned the expired token silently)
+* Breaking: exported type `URL` renamed to `UrlString` to avoid shadowing the global `URL` type
+* Feature: `ready` getter — await `client.ready` to ensure state has been restored from storage before calling synchronous methods like `isAuthorized()` (fixes #5)
+* Fix: `fetchAccessTokenUsingRefreshToken` was replacing the request body with the URL string when `extraRefreshParams` were provided
+* Fix: `saveState()` is now properly awaited before redirecting in `requestAuthorizationCode()` and `receiveCode()`, preventing data loss with async storage implementations
+* Fix: `expires_in` omitted by the server no longer produces an `"Invalid Date"` expiry
+* Build: switched from browserify to tsup, output now in `dist/` with ESM + CJS dual format
+* License: changed from AGPL-3.0 to MIT
+
 ### 2.1.1
 * Fixed optional oneTimeParams
 
