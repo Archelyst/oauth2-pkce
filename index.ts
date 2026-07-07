@@ -89,7 +89,7 @@ export class OAuth2AuthCodePkceClient {
     private state: State = { };
     private authCodeForAccessTokenPromise?: Promise<TokenResponse>;
     private refreshTokenForAccessTokenPromise?: Promise<TokenResponse>;
-    private refreshToken: string;
+    private refreshToken: string | undefined;
     private storage: Storage;
     private ready: Promise<void>;
     private setReady!: () => void;
@@ -367,7 +367,7 @@ export class OAuth2AuthCodePkceClient {
         const url = this.config.tokenUrl;
         const paramsObject = {
             grant_type: 'authorization_code',
-            code: authorizationCode,
+            code: authorizationCode!,
             redirect_uri: redirectUrl,
             client_id: clientId,
             code_verifier: codeVerifier,

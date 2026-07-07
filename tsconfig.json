@@ -1,21 +1,12 @@
 {
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
+    "target": "es2019",
     "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["es2019", "dom"],
+    "strict": true,
     "skipLibCheck": true,
-    "removeComments": true,
-    "declaration": true,
-    "emitDecoratorMetadata": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "target": "es6",
-    "lib": [
-      "es2015",
-      "es2017",
-      "es2019",
-      "dom"
-    ],
-    "moduleResolution": "node",
-    "allowJs": true
-  }
+    "esModuleInterop": true
+  },
+  "exclude": ["dist", "node_modules"]
 }
