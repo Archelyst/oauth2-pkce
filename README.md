@@ -104,6 +104,23 @@ There is also a shortcut in case your setup doesn't feature interceptors:
 window.fetch = oauthClient.decorateFetchWithInterceptors(window.fetch);
 ```
 
+### Waiting for the Client to be Ready
+
+The constructor restores persisted state (e.g. a previously obtained access token) from storage asynchronously. With async storage implementations this means that `isAuthorized()` and similar synchronous methods may not yet reflect the restored state immediately after construction.
+
+Use the `ready` getter to wait until state recovery is complete:
+
+```js
+const oauthClient = new OAuth2AuthCodePkceClient(config);
+await oauthClient.ready;
+
+if (oauthClient.isAuthorized()) {
+    // safe to use — state has been restored from storage
+}
+```
+
+`getTokens()` awaits `ready` internally, so no manual wait is needed when calling it directly.
+
 ### Check Authorization State
 
 With `oauthClient.isAuthorized()` you can check whether the user has an access token. This does not actually send a request to the backend. It allows you to decide if the user has to be redirected to login.

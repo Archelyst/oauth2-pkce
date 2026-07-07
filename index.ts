@@ -91,13 +91,17 @@ export class OAuth2AuthCodePkceClient {
     private refreshTokenForAccessTokenPromise?: Promise<TokenResponse>;
     private refreshToken: string | undefined;
     private storage: Storage;
-    private ready: Promise<void>;
+    private _ready: Promise<void>;
     private setReady!: () => void;
+
+    public get ready(): Promise<void> {
+        return this._ready;
+    }
 
     constructor(config: Configuration, storage?: Storage) {
         this.config = config;
         this.storage = storage || LocalStorage;
-        this.ready = new Promise(resolve => this.setReady = resolve);
+        this._ready = new Promise(resolve => this.setReady = resolve);
         this.recoverState();
     }
 
@@ -184,7 +188,7 @@ export class OAuth2AuthCodePkceClient {
         if (!this.state.authorizationCode) {
             throw new ErrorNoAuthCode();
         }
-        this.saveState();
+        await this.saveState();
     }
 
     /**
@@ -196,6 +200,7 @@ export class OAuth2AuthCodePkceClient {
      * values which need to change at run-time.
      */
     public async getTokens(oneTimeParams?: ObjStringDict): Promise<AccessContext> {
+        await this._ready;
         const {
             accessToken,
             authorizationCode,
