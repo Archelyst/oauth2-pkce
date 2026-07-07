@@ -28,7 +28,7 @@
     "authorization grant"
   ],
   "author": "Tim-Christian Mundt",
-  "license": "AGPL-3.0-only",
+  "license": "MIT",
   "devDependencies": {
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
